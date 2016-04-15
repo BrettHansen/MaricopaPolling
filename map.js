@@ -14,6 +14,8 @@ function initialize() {
 }
 initialize();
 
+
+
 map.data.loadGeoJson('./maricopa.geojson', null, function(data) {
   map.data.forEach(function(feature) {
     // Might be removable
