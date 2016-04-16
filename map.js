@@ -41,12 +41,21 @@ map.data.loadGeoJson('./race.geojson', null, function(data) {
     colorFeatures();
 });
 
+var pop_densities = [];
+var max_pop_density;
 function colorFeatures() {
   var feature;
   for(i in features) {
     feature = features[i];
     var color = rgbToHex(parseInt(Math.pow(1 - feature.R.WHITEPOP / feature.R.TOTALPOP, 1) * 255), 0, parseInt(Math.pow(feature.R.WHITEPOP / feature.R.TOTALPOP, 3) * 255));
+    pop_densities.push(feature.R.TOTALPOP / feature.R.ALAND10);
     feature.setProperty("color", color);
+  }
+  max_pop_density = Math.max(...pop_densities);
+  for(i in features) {
+    feature = features[i];
+    var density = Math.pow(pop_densities[i] / max_pop_density, .4);
+    feature.setProperty("opacity", density);
   }
   map.data.revertStyle();
 }
@@ -72,10 +81,12 @@ map.data.addListener('mouseout', unhoverFeature);
 var selectedFeature;
 function clickFeature(event) {
   if(selectedFeature) {
+    selectedFeature.setProperty("stroke_color", false);
     selectedFeature.setProperty("stroke_weight", false);
     selectedFeature.setProperty("stroke_opacity", false);
   }
   selectedFeature = event.feature;
+  selectedFeature.setProperty("stroke_color", "#171717");
   selectedFeature.setProperty("stroke_weight", 2);
   selectedFeature.setProperty("stroke_opacity", 1.0);
   map.data.revertStyle();
