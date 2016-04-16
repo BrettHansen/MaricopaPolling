@@ -14,9 +14,11 @@ function initialize() {
 }
 initialize();
 
+getLocations(function(locations) {
+  console.log(locations);
+});
 
-
-map.data.loadGeoJson('./maricopa.geojson', null, function(data) {
+map.data.loadGeoJson('./race.geojson', null, function(data) {
   map.data.forEach(function(feature) {
     // Might be removable
   });
@@ -53,6 +55,8 @@ function clickFeature(event) {
 
   lastClickedFeature = event.feature;
   updateFeatureStyle(lastClickedFeature, stroke_active);
+
+  console.log(event.feature.R.WHITEPOP / event.feature.R.TOTALPOP * 100);
 }
 
 function hoverFeature(event) {
