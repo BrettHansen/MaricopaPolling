@@ -4,8 +4,8 @@ var map;
   */
 function initialize() {
   map = new google.maps.Map($("#map")[0], {
-    zoom: 9,
-    center: new google.maps.LatLng(33.4, -112),
+    zoom: 11,
+    center: new google.maps.LatLng(33.5, -112.1),
     streetViewControl : false,
     mapTypeControl : false,
     mapTypeId: google.maps.MapTypeId.TERRAIN,
@@ -45,24 +45,11 @@ function colorFeatures() {
   var feature;
   for(i in features) {
     feature = features[i];
-    var color = rgbToHex(parseInt(Math.pow(feature.R.WHITEPOP / feature.R.TOTALPOP, 3) * 255), 0, 0);
-    updateFeatureStyle(feature, {fillColor : color});
+    var color = rgbToHex(parseInt(Math.pow(1 - feature.R.WHITEPOP / feature.R.TOTALPOP, 1) * 255), 0, parseInt(Math.pow(feature.R.WHITEPOP / feature.R.TOTALPOP, 3) * 255));
+    feature.setProperty("color", color);
   }
+  map.data.revertStyle();
 }
-
-var style_passive = {
-  fillColor : "#f7fbff",
-  fillOpacity : 0.5,
-  strokeColor : '#454545',
-  strokeOpacity : 1.0,
-  strokeWeight : 1
-}
-
-var stroke_passive = {
-  strokeColor : '#454545',
-  strokeOpacity : 0.5,
-  strokeWeight : 1
-};
 
 var stroke_active = {
   strokeColor : '#171717',
@@ -70,39 +57,34 @@ var stroke_active = {
   strokeWeight : 2
 };
 
-map.data.setStyle(style_passive);
+map.data.setStyle(function(feature) {
+  return ({ fillColor : feature.getProperty("color") ? feature.getProperty("color") : "#f7fbff",
+            fillOpacity : feature.getProperty("opacity") ? feature.getProperty("opacity") : 0.5,
+            strokeColor : feature.getProperty("stroke_color") ? feature.getProperty("stroke_color") : "#454545",
+            strokeOpacity : feature.getProperty("stroke_opacity") ? feature.getProperty("stroke_opacity") : 0.5,
+            strokeWeight : feature.getProperty("stroke_weight") ? feature.getProperty("stroke_weight") : 1,
+          });
+});
 map.data.addListener('click', clickFeature);
 map.data.addListener('mouseover', hoverFeature);
 map.data.addListener('mouseout', unhoverFeature);
 
-var lastClickedFeature;
+var selectedFeature;
 function clickFeature(event) {
-  if(lastClickedFeature !== undefined)
-    updateFeatureStyle(lastClickedFeature, stroke_passive)
-
-  lastClickedFeature = event.feature;
-  updateFeatureStyle(lastClickedFeature, stroke_active);
-
-  console.log(event.feature.R.WHITEPOP / event.feature.R.TOTALPOP * 100);
+  if(selectedFeature) {
+    selectedFeature.setProperty("stroke_weight", false);
+    selectedFeature.setProperty("stroke_opacity", false);
+  }
+  selectedFeature = event.feature;
+  selectedFeature.setProperty("stroke_weight", 2);
+  selectedFeature.setProperty("stroke_opacity", 1.0);
+  map.data.revertStyle();
 }
 
 function hoverFeature(event) {
-  updateFeatureStyle(event.feature, stroke_active);
+  map.data.overrideStyle(event.feature, stroke_active);
 }
 
 function unhoverFeature(event) {
-  if(event.feature !== lastClickedFeature)
-    updateFeatureStyle(event.feature, stroke_passive);
-}
-
-/**
-  * Updates the style of a feature given a new style
-  */
-function updateFeatureStyle(feature, style) {
-  var currentStyle = map.data.getStyle(feature);
-  console.log(currentStyle);
-  for(var key in style) {
-    currentStyle[key] = style[key];
-  }
-  map.data.overrideStyle(feature, currentStyle);
+  map.data.revertStyle();
 }
