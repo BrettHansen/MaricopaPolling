@@ -4,13 +4,13 @@ function getLocations(callback) {
 		var lines = data.split('\n');
 		for(i in lines) {
 			elements = lines[i].split('\t');
-			local = new Object();
-			local.city = elements[0];
-			local.name = elements[1];
-			local.address = elements[2] + ", " + elements[3];
-			local.lat = elements[6];
-			local.lng = elements[7];
-			locations.push(local);
+			locale = new Object();
+			locale.city = elements[0];
+			locale.name = elements[1];
+			locale.address = elements[2] + ", " + elements[3];
+			locale.lat = elements[6];
+			locale.lng = elements[7];
+			locations.push(locale);
 		}
 		callback(locations);
 	}, "text");

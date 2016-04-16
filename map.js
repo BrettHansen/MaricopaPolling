@@ -14,20 +14,47 @@ function initialize() {
 }
 initialize();
 
+var ready = false;
+var markers = [];
 getLocations(function(locations) {
-  console.log(locations);
+  for(i in locations) {
+    markers.push(new google.maps.Marker({
+    position: {lat: parseFloat(locations[i].lat), lng: parseFloat(locations[i].lng)},
+    map: map,
+    title: locations.name
+    }));
+  }
+  if(!ready)
+    ready = true;
+  else
+    colorFeatures();
 });
 
+var features = [];
 map.data.loadGeoJson('./race.geojson', null, function(data) {
   map.data.forEach(function(feature) {
-    // Might be removable
+    features.push(feature);
   });
+  if(!ready)
+    ready = true;
+  else
+    colorFeatures();
 });
+
+function colorFeatures() {
+  var feature;
+  for(i in features) {
+    feature = features[i];
+    var color = rgbToHex(parseInt(Math.pow(feature.R.WHITEPOP / feature.R.TOTALPOP, 3) * 255), 0, 0);
+    updateFeatureStyle(feature, {fillColor : color});
+  }
+}
 
 var style_passive = {
   fillColor : "#f7fbff",
+  fillOpacity : 0.5,
   strokeColor : '#454545',
-  strokeOpacity : 0.5,
+  strokeOpacity : 1.0,
   strokeWeight : 1
 }
 
@@ -35,7 +62,7 @@ var stroke_passive = {
   strokeColor : '#454545',
   strokeOpacity : 0.5,
   strokeWeight : 1
-  };
+};
 
 var stroke_active = {
   strokeColor : '#171717',
@@ -73,6 +100,7 @@ function unhoverFeature(event) {
   */
 function updateFeatureStyle(feature, style) {
   var currentStyle = map.data.getStyle(feature);
+  console.log(currentStyle);
   for(var key in style) {
     currentStyle[key] = style[key];
   }
