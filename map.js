@@ -15,19 +15,16 @@ function initialize() {
 initialize();
 
 var ready = false;
-var markers = [];
-getLocations(function(locations) {
-  for(i in locations) {
-    markers.push(new google.maps.Marker({
-    position: {lat: parseFloat(locations[i].lat), lng: parseFloat(locations[i].lng)},
-    map: map,
-    title: locations.name
-    }));
-  }
-  if(!ready)
-    ready = true;
-  else
-    colorFeatures();
+var markers_2008 = [];
+var markers_2012 = [];
+var markers_2016 = [];
+getLocations(function(locale_2008, locale_2012, locale_2016) {
+  markers_2008 = locale_2008;
+  markers_2012 = locale_2012;
+  markers_2016 = locale_2016;
+  setMarkers(markers_2008, true);
+  setMarkers(markers_2012, true);
+  setMarkers(markers_2016, true);
 });
 
 var features = [];
@@ -35,10 +32,7 @@ map.data.loadGeoJson('./race.geojson', null, function(data) {
   map.data.forEach(function(feature) {
     features.push(feature);
   });
-  if(!ready)
-    ready = true;
-  else
-    colorFeatures();
+  colorFeatures();
 });
 
 var pop_densities = [];
@@ -58,6 +52,16 @@ function colorFeatures() {
     feature.setProperty("opacity", density);
   }
   map.data.revertStyle();
+}
+
+function setMarkers(markers, on) {
+  if(on) {
+    for(i in markers)
+      markers[i].setMap(map);
+  } else {
+    for(i in markers)
+      markers[i].setMap(null);
+  }
 }
 
 var stroke_active = {

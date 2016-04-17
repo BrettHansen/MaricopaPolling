@@ -1,17 +1,42 @@
-locations = [];
+var pinImages = [getPinImage("FE7569"), getPinImage("3F9BBA"), getPinImage("57C96E")];
+function getPinImage(color) {
+	return 	new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + color,
+    		new google.maps.Size(21, 34),
+    		new google.maps.Point(0,0),
+    		new google.maps.Point(10, 34));
+}
+
 function getLocations(callback) {
-	$.get("locations.txt", function(data) {
-		var lines = data.split('\n');
-		for(i in lines) {
-			elements = lines[i].split('\t');
-			locale = new Object();
-			locale.city = elements[0];
-			locale.name = elements[1];
-			locale.address = elements[2] + ", " + elements[3];
-			locale.lat = elements[6];
-			locale.lng = elements[7];
-			locations.push(locale);
-		}
-		callback(locations);
+	var markers_all = [];
+	$.get("locations_2008.txt", function(data) {
+		markers_all[0] = parseLocationData(data, 0);
+		signalCallback(markers_all, callback);
 	}, "text");
+	$.get("locations_2012.txt", function(data) {
+		markers_all[1] = parseLocationData(data, 1);
+		signalCallback(markers_all, callback);
+	}, "text");
+	$.get("locations_2016.txt", function(data) {
+		markers_all[2] = parseLocationData(data, 2);
+		signalCallback(markers_all, callback);
+	}, "text");
+}
+
+function parseLocationData(data, index) {
+	var markers = [];
+	var lines = data.split('\n');
+	for(i in lines) {
+		elements = lines[i].split('\t');
+		markers.push(new google.maps.Marker({
+			position : {lat : parseFloat(elements[5]), lng : parseFloat(elements[6])},
+			title : elements[2],
+			icon : pinImages[index]
+		}));
+	}
+	return markers;
+}
+
+function signalCallback(all, callback) {
+	if(all[0] && all[1] && all[2])
+		callback(all[0], all[1], all[2]);
 }
