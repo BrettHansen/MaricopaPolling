@@ -27,6 +27,16 @@ getLocations(function(locale_2008, locale_2012, locale_2016) {
   setMarkers(markers_2016, true);
 });
 
+$("#polls_2008").click(function(event) {
+  setMarkers(markers_2008, this.checked);
+});
+$("#polls_2012").click(function(event) {
+  setMarkers(markers_2012, this.checked);
+});
+$("#polls_2016").click(function(event) {
+  setMarkers(markers_2016, this.checked);
+});
+
 var features = [];
 map.data.loadGeoJson('./race.geojson', null, function(data) {
   map.data.forEach(function(feature) {
