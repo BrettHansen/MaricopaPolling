@@ -36,6 +36,9 @@ $("#polls_2012").click(function(event) {
 $("#polls_2016").click(function(event) {
   setMarkers(markers_2016, this.checked);
 });
+$("#polls_2008").prop("checked", true);
+$("#polls_2012").prop("checked", true);
+$("#polls_2016").prop("checked", true);
 
 var features = [];
 map.data.loadGeoJson('./race.geojson', null, function(data) {
@@ -93,6 +96,9 @@ map.data.addListener('mouseover', hoverFeature);
 map.data.addListener('mouseout', unhoverFeature);
 
 var selectedFeature;
+var infoWindow = new google.maps.InfoWindow({
+  content : "click a block"
+});
 function clickFeature(event) {
   if(selectedFeature) {
     selectedFeature.setProperty("stroke_color", false);
@@ -100,6 +106,21 @@ function clickFeature(event) {
     selectedFeature.setProperty("stroke_opacity", false);
   }
   selectedFeature = event.feature;
+  if(selectedFeature.minDist === undefined) {
+    var distances = [];
+    distances[0] = calculateMinDist(markers_2008, selectedFeature.R.INTPTLAT10, selectedFeature.R.INTPTLON10);
+    distances[1] = calculateMinDist(markers_2012, selectedFeature.R.INTPTLAT10, selectedFeature.R.INTPTLON10);
+    distances[2] = calculateMinDist(markers_2016, selectedFeature.R.INTPTLAT10, selectedFeature.R.INTPTLON10);
+    selectedFeature.minDist = distances;
+  }
+  infoWindow.close()
+  infoWindow.setContent(generateInfoWindow( selectedFeature.R.WHITEPOP,
+                                            selectedFeature.R.TOTALPOP,
+                                            selectedFeature.minDist[0],
+                                            selectedFeature.minDist[1],
+                                            selectedFeature.minDist[2]));
+  infoWindow.setPosition({lat : parseFloat(selectedFeature.R.INTPTLAT10), lng : parseFloat(selectedFeature.R.INTPTLON10)});
+  infoWindow.open(map);
   selectedFeature.setProperty("stroke_color", "#171717");
   selectedFeature.setProperty("stroke_weight", 2);
   selectedFeature.setProperty("stroke_opacity", 1.0);
