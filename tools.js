@@ -1,21 +1,36 @@
+/**
+ * Returns the appropriate color given a feature.
+ */
 function getColor(feature) {
 	return rgbToHex(parseInt(Math.pow(1 - feature.R.WHITEPOP / feature.R.TOTALPOP, 1) * 255), 0,
 					parseInt(Math.pow(feature.R.WHITEPOP / feature.R.TOTALPOP, 3) * 255));
 }
 
+/**
+ * Converts an 8-bit integer to hex.
+ */
 function componentToHex(c) {
     var hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
 
+/**
+ * Converts an rgb triple to hex.
+ */
 function rgbToHex(r, g, b) {
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
+/**
+ * Returns population density of a feature.
+ */
 function popDensity(feature) {
 	return Math.log(feature.R.TOTALPOP) / Math.log(feature.R.ALAND10);
 }
 
+/**
+ * Returns the appropriate feature style based on the feature's properties.
+ */
 function getFeatureStyle(feature) {
   return ({ fillColor     : feature.getProperty("color")          ? feature.getProperty("color")          : "#f7fbff",
             fillOpacity   : feature.getProperty("opacity")        ? feature.getProperty("opacity")        : 0.5,
@@ -25,6 +40,9 @@ function getFeatureStyle(feature) {
           });
 };
 
+/**
+ * Returns the feature's lat-lng coordinates.
+ */
 function getLatLng(feature) {
 	return ({lat : parseFloat(feature.R.INTPTLAT10), lng : parseFloat(feature.R.INTPTLON10)});
 }
@@ -46,6 +64,9 @@ function getDistance(coord1, coord2) {
 	return Math.sqrt(x * x + y * y) * R * 0.000621371;
 }
 
+/**
+ * Returns the minimum distance between an array of markers and a feature.
+ */
 function minDist(markers, feature) {
 	var min;
 	var temp;
@@ -58,10 +79,16 @@ function minDist(markers, feature) {
 	return min;
 }
 
+/**
+ * Returns radians from degrees.
+ */
 function toRadians(degrees) {
 	return degrees / 180 * Math.PI;
 }
 
+/**
+ * Generates the info window using a feature's properties.
+ */
 function generateInfoWindow(feature) {
 	return 	'<div id="siteNotice">' +
 				'</div>' +
@@ -78,7 +105,9 @@ function generateInfoWindow(feature) {
 			'</div>';
 }
 
-
+/**
+ * Properties of an active stroke.
+ */
 var stroke_active = {
   strokeColor : '#171717',
   strokeOpacity : 1.0,
