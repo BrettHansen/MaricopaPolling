@@ -13,8 +13,19 @@ function initialize() {
   });
 }
 initialize();
+map.data.setStyle(getFeatureStyle);
+map.data.addListener('click', clickFeature);
+map.data.addListener('mouseover', hoverFeature);
+map.data.addListener('mouseout', unhoverFeature);
 
-var ready = false;
+var features = [];
+map.data.loadGeoJson('./data/race.geojson', null, function(data) {
+  map.data.forEach(function(feature) {
+    features.push(feature);
+  });
+  colorFeatures();
+});
+
 var markers_2008 = [];
 var markers_2012 = [];
 var markers_2016 = [];
@@ -40,33 +51,6 @@ $("#polls_2008").prop("checked", true);
 $("#polls_2012").prop("checked", true);
 $("#polls_2016").prop("checked", true);
 
-var features = [];
-map.data.loadGeoJson('./race.geojson', null, function(data) {
-  map.data.forEach(function(feature) {
-    features.push(feature);
-  });
-  colorFeatures();
-});
-
-var pop_densities = [];
-var max_pop_density;
-function colorFeatures() {
-  var feature;
-  for(i in features) {
-    feature = features[i];
-    var color = rgbToHex(parseInt(Math.pow(1 - feature.R.WHITEPOP / feature.R.TOTALPOP, 1) * 255), 0, parseInt(Math.pow(feature.R.WHITEPOP / feature.R.TOTALPOP, 3) * 255));
-    pop_densities.push(feature.R.TOTALPOP / feature.R.ALAND10);
-    feature.setProperty("color", color);
-  }
-  max_pop_density = Math.max(...pop_densities);
-  for(i in features) {
-    feature = features[i];
-    var density = Math.pow(pop_densities[i] / max_pop_density, .4);
-    feature.setProperty("opacity", density);
-  }
-  map.data.revertStyle();
-}
-
 function setMarkers(markers, on) {
   if(on) {
     for(i in markers)
@@ -77,28 +61,22 @@ function setMarkers(markers, on) {
   }
 }
 
-var stroke_active = {
-  strokeColor : '#171717',
-  strokeOpacity : 1.0,
-  strokeWeight : 2
-};
-
-map.data.setStyle(function(feature) {
-  return ({ fillColor : feature.getProperty("color") ? feature.getProperty("color") : "#f7fbff",
-            fillOpacity : feature.getProperty("opacity") ? feature.getProperty("opacity") : 0.5,
-            strokeColor : feature.getProperty("stroke_color") ? feature.getProperty("stroke_color") : "#454545",
-            strokeOpacity : feature.getProperty("stroke_opacity") ? feature.getProperty("stroke_opacity") : 0.5,
-            strokeWeight : feature.getProperty("stroke_weight") ? feature.getProperty("stroke_weight") : 1,
-          });
-});
-map.data.addListener('click', clickFeature);
-map.data.addListener('mouseover', hoverFeature);
-map.data.addListener('mouseout', unhoverFeature);
+var pop_densities = [];
+var max_pop_density;
+function colorFeatures() {
+  for(i in features) {
+    pop_densities.push(popDensity(features[i]));
+    features[i].setProperty("color", getColor(features[i]));
+  }
+  max_pop_density = Math.max(...pop_densities);
+  for(i in features) {
+    features[i].setProperty("opacity", Math.pow(pop_densities[i] / max_pop_density, 7));
+  }
+  map.data.revertStyle();
+}
 
 var selectedFeature;
-var infoWindow = new google.maps.InfoWindow({
-  content : "click a block"
-});
+var infoWindow = new google.maps.InfoWindow();
 function clickFeature(event) {
   if(selectedFeature) {
     selectedFeature.setProperty("stroke_color", false);
@@ -106,21 +84,16 @@ function clickFeature(event) {
     selectedFeature.setProperty("stroke_opacity", false);
   }
   selectedFeature = event.feature;
-  if(selectedFeature.minDist === undefined) {
-    var distances = [];
-    distances[0] = calculateMinDist(markers_2008, selectedFeature.R.INTPTLAT10, selectedFeature.R.INTPTLON10);
-    distances[1] = calculateMinDist(markers_2012, selectedFeature.R.INTPTLAT10, selectedFeature.R.INTPTLON10);
-    distances[2] = calculateMinDist(markers_2016, selectedFeature.R.INTPTLAT10, selectedFeature.R.INTPTLON10);
-    selectedFeature.minDist = distances;
+  if(selectedFeature.distances === undefined) {
+    selectedFeature.distances = [ minDist(markers_2008, selectedFeature),
+                                  minDist(markers_2012, selectedFeature),
+                                  minDist(markers_2016, selectedFeature)];
   }
   infoWindow.close()
-  infoWindow.setContent(generateInfoWindow( selectedFeature.R.WHITEPOP,
-                                            selectedFeature.R.TOTALPOP,
-                                            selectedFeature.minDist[0],
-                                            selectedFeature.minDist[1],
-                                            selectedFeature.minDist[2]));
-  infoWindow.setPosition({lat : parseFloat(selectedFeature.R.INTPTLAT10), lng : parseFloat(selectedFeature.R.INTPTLON10)});
+  infoWindow.setContent(generateInfoWindow(selectedFeature));
+  infoWindow.setPosition(getLatLng(selectedFeature));
   infoWindow.open(map);
+
   selectedFeature.setProperty("stroke_color", "#171717");
   selectedFeature.setProperty("stroke_weight", 2);
   selectedFeature.setProperty("stroke_opacity", 1.0);

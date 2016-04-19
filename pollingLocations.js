@@ -8,15 +8,15 @@ function getPinImage(color) {
 
 function getLocations(callback) {
 	var markers_all = [];
-	$.get("locations_2008.txt", function(data) {
+	$.get("./data/locations_2008.txt", function(data) {
 		markers_all[0] = parseLocationData(data, 0);
 		signalCallback(markers_all, callback);
 	}, "text");
-	$.get("locations_2012.txt", function(data) {
+	$.get("./data/locations_2012.txt", function(data) {
 		markers_all[1] = parseLocationData(data, 1);
 		signalCallback(markers_all, callback);
 	}, "text");
-	$.get("locations_2016.txt", function(data) {
+	$.get("./data/locations_2016.txt", function(data) {
 		markers_all[2] = parseLocationData(data, 2);
 		signalCallback(markers_all, callback);
 	}, "text");

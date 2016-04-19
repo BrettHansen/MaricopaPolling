@@ -30,3 +30,50 @@ li {
 th {
 	text-align: left;
 }
+
+.legend_label {
+	position: absolute;
+}
+
+.left {
+	top: 67px;
+	left: -24px;
+	-webkit-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg);
+	-o-transform: rotate(-90deg);
+}
+
+.right {
+	top: 67px;
+	right: -28px;
+	-webkit-transform: rotate(90deg);
+	-moz-transform: rotate(90deg);
+	-ms-transform: rotate(90deg);
+	-o-transform: rotate(90deg);
+}
+
+.top {
+	left: 40px;
+	top: 3px;
+}
+
+.bottom {
+	left: 40px;
+	bottom: 3px;
+}
+
+#legend {
+	display: block;
+	position: absolute;
+	z-index: 10;
+	width: 150px;
+	height: 150px;
+	bottom: 40px;
+	left: 40px;
+}
+
+#canvas {
+	border: solid 25px rgba(255, 255, 255, .8);
+	border-radius: 5px;
+}

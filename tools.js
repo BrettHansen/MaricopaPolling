@@ -1,3 +1,8 @@
+function getColor(feature) {
+	return rgbToHex(parseInt(Math.pow(1 - feature.R.WHITEPOP / feature.R.TOTALPOP, 1) * 255), 0,
+					parseInt(Math.pow(feature.R.WHITEPOP / feature.R.TOTALPOP, 3) * 255));
+}
+
 function componentToHex(c) {
     var hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
@@ -5,6 +10,23 @@ function componentToHex(c) {
 
 function rgbToHex(r, g, b) {
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function popDensity(feature) {
+	return Math.log(feature.R.TOTALPOP) / Math.log(feature.R.ALAND10);
+}
+
+function getFeatureStyle(feature) {
+  return ({ fillColor     : feature.getProperty("color")          ? feature.getProperty("color")          : "#f7fbff",
+            fillOpacity   : feature.getProperty("opacity")        ? feature.getProperty("opacity")        : 0.5,
+            strokeColor   : feature.getProperty("stroke_color")   ? feature.getProperty("stroke_color")   : "#454545",
+            strokeOpacity : feature.getProperty("stroke_opacity") ? feature.getProperty("stroke_opacity") : 0.5,
+            strokeWeight  : feature.getProperty("stroke_weight")  ? feature.getProperty("stroke_weight")  : 1,
+          });
+};
+
+function getLatLng(feature) {
+	return ({lat : parseFloat(feature.R.INTPTLAT10), lng : parseFloat(feature.R.INTPTLON10)});
 }
 
 /**
@@ -24,10 +46,10 @@ function getDistance(coord1, coord2) {
 	return Math.sqrt(x * x + y * y) * R * 0.000621371;
 }
 
-function calculateMinDist(markers, latStr, lonStr) {
+function minDist(markers, feature) {
 	var min;
 	var temp;
-	var point = [parseFloat(latStr), parseFloat(lonStr)];
+	var point = [parseFloat(feature.R.INTPTLAT10), parseFloat(feature.R.INTPTLON10)];
 	for(i in markers) {
 		temp = getDistance([markers[i].position.lat(), markers[i].position.lng()], point);
 		if(min === undefined || temp < min)
@@ -40,18 +62,25 @@ function toRadians(degrees) {
 	return degrees / 180 * Math.PI;
 }
 
-function generateInfoWindow(tot_white, tot_pop, dist_2008, dist_2012, dist_2016) {
+function generateInfoWindow(feature) {
 	return 	'<div id="siteNotice">' +
 				'</div>' +
 					'<div id="bodyContent">' +
 						'<table><th colspan="2">Polling Station Distance:</th><tbody>' +
-						'<tr><td>2008</td><td>' + (Math.floor(dist_2008 * 100) / 100).toFixed(2) + ' miles</td></tr>' +
-						'<tr><td>2012</td><td>' + (Math.floor(dist_2012 * 100) / 100).toFixed(2) + ' miles</td></tr>' +
-						'<tr><td>2016</td><td>' + (Math.floor(dist_2016 * 100) / 100).toFixed(2) + ' miles</td></tr>' +
+						'<tr><td>2008</td><td>' + (Math.floor(feature.distances[0] * 100) / 100).toFixed(2) + ' miles</td></tr>' +
+						'<tr><td>2012</td><td>' + (Math.floor(feature.distances[1] * 100) / 100).toFixed(2) + ' miles</td></tr>' +
+						'<tr><td>2016</td><td>' + (Math.floor(feature.distances[2] * 100) / 100).toFixed(2) + ' miles</td></tr>' +
 						'<th colspan="2">White Proportion:</th>' +
-						'<tr><td>' + (Math.floor(tot_white / tot_pop * 10000) / 100).toFixed(2) + '%</td></tr>' + 
+						'<tr><td>' + (Math.floor(feature.R.WHITEPOP / feature.R.TOTALPOP * 10000) / 100).toFixed(2) + '%</td></tr>' + 
 						'</tbody></table>' +
 					'</div>' +
 				'</div>' +
 			'</div>';
 }
+
+
+var stroke_active = {
+  strokeColor : '#171717',
+  strokeOpacity : 1.0,
+  strokeWeight : 2
+};
