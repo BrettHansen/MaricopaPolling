@@ -2,8 +2,8 @@
  * Returns the appropriate color given a feature.
  */
 function getColor(feature) {
-	return rgbToHex(parseInt(Math.pow(1 - feature.R.WHITEPOP / feature.R.TOTALPOP, 1) * 255), 0,
-					parseInt(Math.pow(feature.R.WHITEPOP / feature.R.TOTALPOP, 3) * 255));
+	return rgbToHex(parseInt(Math.pow(1 - getFeatureProperty(feature, "WHITEPOP") / getFeatureProperty(feature, "TOTALPOP"), 1) * 255), 0,
+					parseInt(Math.pow(getFeatureProperty(feature, "WHITEPOP") / getFeatureProperty(feature, "TOTALPOP"), 3) * 255));
 }
 
 /**
@@ -25,7 +25,7 @@ function rgbToHex(r, g, b) {
  * Returns population density of a feature.
  */
 function popDensity(feature) {
-	return Math.log(feature.R.TOTALPOP) / Math.log(feature.R.ALAND10);
+	return Math.log(getFeatureProperty(feature, "TOTALPOP")) / Math.log(getFeatureProperty(feature, "ALAND10"));
 }
 
 /**
@@ -44,7 +44,7 @@ function getFeatureStyle(feature) {
  * Returns the feature's lat-lng coordinates.
  */
 function getLatLng(feature) {
-	return ({lat : parseFloat(feature.R.INTPTLAT10), lng : parseFloat(feature.R.INTPTLON10)});
+	return ({lat : parseFloat(getFeatureProperty(feature, "INTPTLAT10")), lng : parseFloat(getFeatureProperty(feature, "INTPTLON10"))});
 }
 
 /**
@@ -70,7 +70,7 @@ function getDistance(coord1, coord2) {
 function minDist(markers, feature) {
 	var min;
 	var temp;
-	var point = [parseFloat(feature.R.INTPTLAT10), parseFloat(feature.R.INTPTLON10)];
+	var point = [parseFloat(getFeatureProperty(feature, "INTPTLAT10")), parseFloat(getFeatureProperty(feature, "INTPTLON10"))];
 	for(i in markers) {
 		temp = getDistance([markers[i].position.lat(), markers[i].position.lng()], point);
 		if(min === undefined || temp < min)
@@ -98,11 +98,19 @@ function generateInfoWindow(feature) {
 						'<tr><td>2012</td><td>' + (Math.floor(feature.distances[1] * 100) / 100).toFixed(2) + ' miles</td></tr>' +
 						'<tr><td>2016</td><td>' + (Math.floor(feature.distances[2] * 100) / 100).toFixed(2) + ' miles</td></tr>' +
 						'<th colspan="2">White Proportion:</th>' +
-						'<tr><td>' + (Math.floor(feature.R.WHITEPOP / feature.R.TOTALPOP * 10000) / 100).toFixed(2) + '%</td></tr>' + 
+						'<tr><td>' + (Math.floor(getFeatureProperty(feature, "WHITEPOP") / getFeatureProperty(feature, "TOTALPOP") * 10000) / 100).toFixed(2) + '%</td></tr>' + 
 						'</tbody></table>' +
 					'</div>' +
 				'</div>' +
 			'</div>';
+}
+
+function getFeatureProperty(feature, prop) {
+	for(var key in feature)
+		if(feature !== undefined && feature[key] !== undefined && feature[key][prop] !== undefined)
+			return feature[key][prop];
+	
+	return undefined;
 }
 
 /**
