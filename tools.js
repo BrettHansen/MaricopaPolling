@@ -105,6 +105,9 @@ function generateInfoWindow(feature) {
 			'</div>';
 }
 
+/**
+ * Gets the property of a feature regardless of how it is stored.
+ */
 function getFeatureProperty(feature, prop) {
 	for(var key in feature)
 		if(feature !== undefined && feature[key] !== undefined && feature[key][prop] !== undefined)
